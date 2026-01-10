@@ -11,7 +11,21 @@ function App() {
   const [recordingProgress, setRecordingProgress] = useState(0)
   const [recordingRotation, setRecordingRotation] = useState(0)
   const [showExportMenu, setShowExportMenu] = useState(false)
+  const [showSettings, setShowSettings] = useState(false)
   const boundsRef = useRef({ aspectRatio: 1 })
+
+  // Settings
+  const [settings, setSettings] = useState({
+    rotationDuration: 3.5,
+    bevelType: 'chamfer', // 'chamfer' or 'rounded'
+    lightIntensity: 4,
+    bloomIntensity: 0.15,
+    bloomThreshold: 0.15,
+  })
+
+  const updateSetting = (key, value) => {
+    setSettings(prev => ({ ...prev, [key]: value }))
+  }
 
   const handleBoundsCalculated = useCallback((bounds) => {
     boundsRef.current = bounds
@@ -19,14 +33,14 @@ function App() {
 
   const captureFrames = async () => {
     const fps = 30
-    const durationMs = 3500 // 3.5 seconds
-    const frames = Math.round((durationMs / 1000) * fps) // 105 frames
-    const frameDelay = Math.round(1000 / fps) // 33ms
+    const durationMs = settings.rotationDuration * 1000
+    const frames = Math.round((durationMs / 1000) * fps)
+    const frameDelay = Math.round(1000 / fps)
     
     const baseHeight = 400
     const aspectRatio = Math.max(1, boundsRef.current.aspectRatio || 1)
-    const width = Math.round(baseHeight * aspectRatio * 1.3)
-    const height = Math.round(baseHeight * 1.3)
+    const width = Math.round(baseHeight * aspectRatio)
+    const height = Math.round(baseHeight * 1.15)
     
     const frameDataArray = []
     const frameCanvases = []
@@ -107,7 +121,7 @@ function App() {
     
     setIsRecording(false)
     setRecordingProgress(0)
-  }, [isRecording, text])
+  }, [isRecording, text, settings])
 
   const exportGif = useCallback(async () => {
     if (isRecording) return
@@ -128,19 +142,19 @@ function App() {
         transparent: 0x00ff00
       })
 
-      // Process frames to add green background for transparency
       frameCanvases.forEach((frameCanvas, i) => {
         const ctx = frameCanvas.getContext('2d')
         const imageData = ctx.getImageData(0, 0, width, height)
         const data = imageData.data
         
-        // Replace transparent pixels with green
         for (let j = 0; j < data.length; j += 4) {
-          if (data[j + 3] < 128) {
-            data[j] = 0      // R
-            data[j + 1] = 255 // G
-            data[j + 2] = 0   // B
-            data[j + 3] = 255 // A
+          const alpha = data[j + 3]
+          
+          if (alpha < 200) {
+            data[j] = 0
+            data[j + 1] = 255
+            data[j + 2] = 0
+            data[j + 3] = 255
           }
         }
         
@@ -165,7 +179,7 @@ function App() {
       setIsRecording(false)
       setRecordingProgress(0)
     }
-  }, [isRecording, text])
+  }, [isRecording, text, settings])
 
   return (
     <div className="app">
@@ -174,24 +188,101 @@ function App() {
         recording={isRecording}
         recordingRotation={recordingRotation}
         onBoundsCalculated={handleBoundsCalculated}
+        settings={settings}
       />
       
-      <div className="export-container">
+      <div className="top-controls">
         <button 
-          className={`export-button ${isRecording ? 'recording' : ''}`}
-          onClick={() => !isRecording && setShowExportMenu(!showExportMenu)}
-          disabled={isRecording}
+          className={`control-button ${showSettings ? 'active' : ''}`}
+          onClick={() => setShowSettings(!showSettings)}
         >
-          {isRecording ? `Rendering... ${recordingProgress}%` : 'Export ▾'}
+          ⚙
         </button>
         
-        {showExportMenu && !isRecording && (
-          <div className="export-menu">
-            <button onClick={exportApng}>APNG (best quality)</button>
-            <button onClick={exportGif}>GIF (smaller size)</button>
-          </div>
-        )}
+        <div className="export-container">
+          <button 
+            className={`export-button ${isRecording ? 'recording' : ''}`}
+            onClick={() => !isRecording && setShowExportMenu(!showExportMenu)}
+            disabled={isRecording}
+          >
+            {isRecording ? `${recordingProgress}%` : 'Export ▾'}
+          </button>
+          
+          {showExportMenu && !isRecording && (
+            <div className="export-menu">
+              <button onClick={exportApng}>APNG</button>
+              <button onClick={exportGif}>GIF</button>
+            </div>
+          )}
+        </div>
       </div>
+      
+      {showSettings && (
+        <div className="settings-panel">
+          <div className="setting-row">
+            <label>Duration</label>
+            <input
+              type="range"
+              min="1"
+              max="8"
+              step="0.5"
+              value={settings.rotationDuration}
+              onChange={(e) => updateSetting('rotationDuration', parseFloat(e.target.value))}
+            />
+            <span>{settings.rotationDuration}s</span>
+          </div>
+          
+          <div className="setting-row">
+            <label>Bevel</label>
+            <select
+              value={settings.bevelType}
+              onChange={(e) => updateSetting('bevelType', e.target.value)}
+            >
+              <option value="chamfer">Chamfer</option>
+              <option value="rounded">Rounded</option>
+            </select>
+          </div>
+          
+          <div className="setting-row">
+            <label>Light</label>
+            <input
+              type="range"
+              min="1"
+              max="8"
+              step="0.5"
+              value={settings.lightIntensity}
+              onChange={(e) => updateSetting('lightIntensity', parseFloat(e.target.value))}
+            />
+            <span>{settings.lightIntensity}</span>
+          </div>
+          
+          <div className="setting-row">
+            <label>Bloom</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={settings.bloomIntensity}
+              onChange={(e) => updateSetting('bloomIntensity', parseFloat(e.target.value))}
+            />
+            <span>{settings.bloomIntensity.toFixed(2)}</span>
+          </div>
+          
+          <div className="setting-row">
+            <label>Threshold</label>
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.05"
+              value={settings.bloomThreshold}
+              onChange={(e) => updateSetting('bloomThreshold', parseFloat(e.target.value))}
+            />
+            <span>{settings.bloomThreshold.toFixed(2)}</span>
+          </div>
+        </div>
+      )}
       
       <div className={`input-container ${isFocused ? 'focused' : ''}`}>
         {isFocused ? (

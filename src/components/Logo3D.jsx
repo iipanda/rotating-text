@@ -7,7 +7,8 @@ export default function Logo3D({
   text = 'GHOST', 
   recording = false, 
   recordingRotation = 0,
-  onBoundsCalculated 
+  onBoundsCalculated,
+  bevelType = 'chamfer'
 }) {
   const groupRef = useRef()
   const centerRef = useRef()
@@ -113,7 +114,7 @@ export default function Logo3D({
             bevelEnabled
             bevelThickness={0.04}
             bevelSize={0.03}
-            bevelSegments={1}
+            bevelSegments={bevelType === 'rounded' ? 8 : 1}
             curveSegments={24}
           >
             {text || ' '}

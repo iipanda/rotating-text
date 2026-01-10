@@ -1,23 +1,23 @@
-import { forwardRef, useRef, useImperativeHandle } from 'react'
-import { Canvas, useThree } from '@react-three/fiber'
+import { forwardRef } from 'react'
+import { Canvas } from '@react-three/fiber'
 import { Environment } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 import Logo3D from './Logo3D'
 
-function SceneContent({ text, recording, recordingRotation, onBoundsCalculated }) {
+function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, settings }) {
   return (
     <>
       {!recording && <color attach="background" args={['#000000']} />}
       
       <directionalLight
         position={[5, 3, 2]}
-        intensity={4}
+        intensity={settings.lightIntensity}
         color="#ff5500"
       />
       
       <pointLight
         position={[-3, 0, -4]}
-        intensity={1.5}
+        intensity={settings.lightIntensity * 0.375}
         color="#ff3300"
       />
       
@@ -26,15 +26,16 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated }
         recording={recording} 
         recordingRotation={recordingRotation}
         onBoundsCalculated={onBoundsCalculated}
+        bevelType={settings.bevelType}
       />
       
       <Environment preset="night" environmentIntensity={0.3} />
       
       <EffectComposer>
         <Bloom
-          luminanceThreshold={0.15}
+          luminanceThreshold={settings.bloomThreshold}
           luminanceSmoothing={0.9}
-          intensity={0.15}
+          intensity={settings.bloomIntensity}
           radius={0.9}
         />
         {!recording && <Vignette eskil={false} offset={0.1} darkness={0.85} />}
@@ -43,7 +44,7 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated }
   )
 }
 
-const Scene = forwardRef(function Scene({ text, recording, recordingRotation, onBoundsCalculated }, ref) {
+const Scene = forwardRef(function Scene({ text, recording, recordingRotation, onBoundsCalculated, settings }, ref) {
   return (
     <Canvas
       ref={ref}
@@ -66,6 +67,7 @@ const Scene = forwardRef(function Scene({ text, recording, recordingRotation, on
         recording={recording}
         recordingRotation={recordingRotation}
         onBoundsCalculated={onBoundsCalculated}
+        settings={settings}
       />
     </Canvas>
   )
