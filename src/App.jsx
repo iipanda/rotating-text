@@ -146,7 +146,8 @@ function App() {
         width,
         height,
         workerScript: '/gif.worker.js',
-        transparent: TRANSPARENT_KEY
+        transparent: TRANSPARENT_KEY,
+        globalPalette: true
       })
 
       frameCanvases.forEach((frameCanvas, i) => {
