@@ -32,10 +32,10 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated }
       
       <EffectComposer>
         <Bloom
-          luminanceThreshold={0.2}
+          luminanceThreshold={0.15}
           luminanceSmoothing={0.9}
-          intensity={0.8}
-          radius={0.8}
+          intensity={0.15}
+          radius={0.9}
         />
         {!recording && <Vignette eskil={false} offset={0.1} darkness={0.85} />}
       </EffectComposer>

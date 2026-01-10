@@ -111,10 +111,10 @@ export default function Logo3D({
             size={1}
             height={0.3}
             bevelEnabled
-            bevelThickness={0.05}
-            bevelSize={0.04}
-            bevelSegments={5}
-            curveSegments={12}
+            bevelThickness={0.04}
+            bevelSize={0.03}
+            bevelSegments={10}
+            curveSegments={24}
           >
             {text || ' '}
             <meshStandardMaterial
