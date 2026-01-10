@@ -1,4 +1,4 @@
-import { useState, useRef, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import GIF from 'gif.js'
 import Scene from './components/Scene'
 import './App.css'
@@ -9,7 +9,6 @@ function App() {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingProgress, setRecordingProgress] = useState(0)
   const [recordingRotation, setRecordingRotation] = useState(0)
-  const sceneRef = useRef()
 
   const renderGif = useCallback(async () => {
     if (isRecording) return
@@ -20,19 +19,21 @@ function App() {
     const frames = 60
     const size = 512
     
+    // Green chroma key color (must match Scene.jsx)
+    const chromaKeyHex = 0x00ff00
+    
     const gif = new GIF({
       workers: 2,
-      quality: 10,
+      quality: 1,
       width: size,
       height: size,
       workerScript: '/gif.worker.js',
-      transparent: 0x000000
+      transparent: chromaKeyHex
     })
 
     // Wait for recording mode to apply
-    await new Promise(r => setTimeout(r, 200))
+    await new Promise(r => setTimeout(r, 300))
 
-    // Find the canvas element
     const canvas = document.querySelector('canvas')
     if (!canvas) {
       console.error('Canvas not found')
@@ -46,7 +47,7 @@ function App() {
       setRecordingRotation(rotation)
       
       // Wait for render
-      await new Promise(r => setTimeout(r, 60))
+      await new Promise(r => setTimeout(r, 80))
       
       // Capture frame
       const tempCanvas = document.createElement('canvas')
@@ -60,7 +61,7 @@ function App() {
       const srcY = (canvas.height - srcSize) / 2
       ctx.drawImage(canvas, srcX, srcY, srcSize, srcSize, 0, 0, size, size)
       
-      gif.addFrame(tempCanvas, { delay: 50, copy: true })
+      gif.addFrame(tempCanvas, { delay: 50, copy: true, dispose: 2 })
       setRecordingProgress(Math.round(((i + 1) / frames) * 100))
     }
 
@@ -81,7 +82,6 @@ function App() {
   return (
     <div className="app">
       <Scene 
-        ref={sceneRef}
         text={text} 
         recording={isRecording}
         recordingRotation={recordingRotation}
