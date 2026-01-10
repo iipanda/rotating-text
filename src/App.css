@@ -109,10 +109,4 @@
   color: rgba(255, 68, 0, 0.8);
 }
 
-.recording-overlay {
-  position: absolute;
-  inset: 0;
-  background: #000000;
-  pointer-events: none;
-  mix-blend-mode: multiply;
-}
+

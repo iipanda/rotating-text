@@ -18,8 +18,10 @@ function App() {
   }, [])
 
   const captureFrames = async () => {
-    const frames = 60
-    const frameDelay = 50
+    const fps = 30
+    const durationMs = 3500 // 3.5 seconds
+    const frames = Math.round((durationMs / 1000) * fps) // 105 frames
+    const frameDelay = Math.round(1000 / fps) // 33ms
     
     const baseHeight = 400
     const aspectRatio = Math.max(1, boundsRef.current.aspectRatio || 1)
@@ -173,8 +175,6 @@ function App() {
         recordingRotation={recordingRotation}
         onBoundsCalculated={handleBoundsCalculated}
       />
-      
-      {isRecording && <div className="recording-overlay" />}
       
       <div className="export-container">
         <button 
