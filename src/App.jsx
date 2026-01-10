@@ -139,47 +139,86 @@ function App() {
       const keyB = 0
       // Higher = more edge pixels become fully transparent (less fringe, more cut-off)
       const alphaCutoff = 230
+      const cropPadding = 8
+
+      let minX = width
+      let minY = height
+      let maxX = -1
+      let maxY = -1
+
+      frameCanvases.forEach((frameCanvas) => {
+        const ctx = frameCanvas.getContext('2d')
+        const imageData = ctx.getImageData(0, 0, width, height)
+        const data = imageData.data
+        
+        for (let y = 0; y < height; y++) {
+          const rowOffset = y * width * 4
+          for (let x = 0; x < width; x++) {
+            const idx = rowOffset + x * 4
+            const alpha = data[idx + 3]
+
+            if (alpha >= alphaCutoff) {
+              if (x < minX) minX = x
+              if (y < minY) minY = y
+              if (x > maxX) maxX = x
+              if (y > maxY) maxY = y
+            }
+
+            if (alpha === 255) continue
+
+            // Convert all non-opaque pixels to either:
+            // - fully transparent (via chroma key), or
+            // - fully opaque composited onto black
+            if (alpha === 0 || alpha < alphaCutoff) {
+              data[idx] = keyR
+              data[idx + 1] = keyG
+              data[idx + 2] = keyB
+              data[idx + 3] = 255
+              continue
+            }
+
+            const a = alpha / 255
+            data[idx] = Math.round(data[idx] * a)
+            data[idx + 1] = Math.round(data[idx + 1] * a)
+            data[idx + 2] = Math.round(data[idx + 2] * a)
+            data[idx + 3] = 255
+          }
+        }
+        
+        ctx.putImageData(imageData, 0, 0)
+      })
+
+      let cropX = 0
+      let cropY = 0
+      let cropW = width
+      let cropH = height
+
+      if (maxX >= 0 && maxY >= 0) {
+        cropX = Math.max(0, minX - cropPadding)
+        cropY = Math.max(0, minY - cropPadding)
+        cropW = Math.min(width, maxX + cropPadding + 1) - cropX
+        cropH = Math.min(height, maxY + cropPadding + 1) - cropY
+      }
 
       const gif = new GIF({
         workers: 2,
         quality: 1,
-        width,
-        height,
+        width: cropW,
+        height: cropH,
         workerScript: '/gif.worker.js',
         transparent: TRANSPARENT_KEY,
         globalPalette: true
       })
 
+      const croppedCanvas = document.createElement('canvas')
+      croppedCanvas.width = cropW
+      croppedCanvas.height = cropH
+      const croppedCtx = croppedCanvas.getContext('2d')
+
       frameCanvases.forEach((frameCanvas, i) => {
-        const ctx = frameCanvas.getContext('2d')
-        const imageData = ctx.getImageData(0, 0, width, height)
-        const data = imageData.data
-        
-        for (let j = 0; j < data.length; j += 4) {
-          const alpha = data[j + 3]
-          
-          if (alpha === 255) continue
-
-          // Convert all non-opaque pixels to either:
-          // - fully transparent (via chroma key), or
-          // - fully opaque composited onto black
-          if (alpha === 0 || alpha < alphaCutoff) {
-            data[j] = keyR
-            data[j + 1] = keyG
-            data[j + 2] = keyB
-            data[j + 3] = 255
-            continue
-          }
-
-          const a = alpha / 255
-          data[j] = Math.round(data[j] * a)
-          data[j + 1] = Math.round(data[j + 1] * a)
-          data[j + 2] = Math.round(data[j + 2] * a)
-          data[j + 3] = 255
-        }
-        
-        ctx.putImageData(imageData, 0, 0)
-        gif.addFrame(frameCanvas, { delay: delays[i], copy: true })
+        croppedCtx.clearRect(0, 0, cropW, cropH)
+        croppedCtx.drawImage(frameCanvas, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH)
+        gif.addFrame(croppedCanvas, { delay: delays[i], copy: true })
       })
 
       gif.on('finished', (blob) => {
