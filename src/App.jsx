@@ -16,9 +16,9 @@ function App() {
 
   // Settings
   const [settings, setSettings] = useState({
-    rotationDuration: 3.5,
-    bevelType: 'chamfer', // 'chamfer' or 'rounded'
-    lightIntensity: 4,
+    rotationDuration: 7,
+    bevelType: 'rounded', // 'chamfer' or 'rounded'
+    lightIntensity: 5,
     bloomIntensity: 0.15,
     bloomThreshold: 0.15,
   })
