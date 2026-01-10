@@ -13,11 +13,16 @@ export default function Logo3D({
 }) {
   const groupRef = useRef()
   const centerRef = useRef()
+  const domElementRef = useRef(null)
   const [isDragging, setIsDragging] = useState(false)
   const [rotation, setRotation] = useState({ x: 0.1, y: 0 })
   const previousMouseRef = useRef({ x: 0, y: 0 })
   const velocityRef = useRef({ x: 0, y: 0 })
   const { gl } = useThree()
+
+  useEffect(() => {
+    domElementRef.current = gl?.domElement ?? null
+  }, [gl])
 
   // Calculate bounds when text changes
   useEffect(() => {
@@ -67,13 +72,13 @@ export default function Logo3D({
     e.stopPropagation()
     setIsDragging(true)
     previousMouseRef.current = { x: e.clientX, y: e.clientY }
-    gl.domElement.style.cursor = 'grabbing'
+    if (domElementRef.current) domElementRef.current.style.cursor = 'grabbing'
   }
 
   const handlePointerUp = () => {
     if (recording) return
     setIsDragging(false)
-    gl.domElement.style.cursor = 'grab'
+    if (domElementRef.current) domElementRef.current.style.cursor = 'grab'
   }
 
   const handlePointerMove = (e) => {
@@ -103,8 +108,12 @@ export default function Logo3D({
       onPointerUp={handlePointerUp}
       onPointerLeave={handlePointerUp}
       onPointerMove={handlePointerMove}
-      onPointerOver={() => { if (!recording) gl.domElement.style.cursor = 'grab' }}
-      onPointerOut={() => { if (!recording) gl.domElement.style.cursor = 'auto' }}
+      onPointerOver={() => {
+        if (!recording && domElementRef.current) domElementRef.current.style.cursor = 'grab'
+      }}
+      onPointerOut={() => {
+        if (!recording && domElementRef.current) domElementRef.current.style.cursor = 'auto'
+      }}
     >
       <Suspense fallback={null}>
         <Center ref={centerRef} key={text}>

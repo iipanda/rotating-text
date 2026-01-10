@@ -31,7 +31,7 @@ function App() {
     boundsRef.current = bounds
   }, [])
 
-  const captureFrames = async () => {
+  const captureFrames = useCallback(async () => {
     const fps = 30
     const durationMs = settings.rotationDuration * 1000
     const frames = Math.round((durationMs / 1000) * fps)
@@ -94,7 +94,7 @@ function App() {
     }
 
     return { frameDataArray, frameCanvases, delays, width, height }
-  }
+  }, [settings.rotationDuration])
 
   const exportApng = useCallback(async () => {
     if (isRecording) return
@@ -121,7 +121,7 @@ function App() {
     
     setIsRecording(false)
     setRecordingProgress(0)
-  }, [isRecording, text, settings])
+  }, [isRecording, text, captureFrames])
 
   const exportGif = useCallback(async () => {
     if (isRecording) return
@@ -133,13 +133,20 @@ function App() {
     try {
       const { frameCanvases, delays, width, height } = await captureFrames()
       
+      const TRANSPARENT_KEY = 0x00ff00
+      const keyR = 0
+      const keyG = 255
+      const keyB = 0
+      // Higher = more edge pixels become fully transparent (less fringe, more cut-off)
+      const alphaCutoff = 230
+
       const gif = new GIF({
         workers: 2,
         quality: 1,
         width,
         height,
         workerScript: '/gif.worker.js',
-        transparent: 0x00ff00
+        transparent: TRANSPARENT_KEY
       })
 
       frameCanvases.forEach((frameCanvas, i) => {
@@ -150,12 +157,24 @@ function App() {
         for (let j = 0; j < data.length; j += 4) {
           const alpha = data[j + 3]
           
-          if (alpha < 200) {
-            data[j] = 0
-            data[j + 1] = 255
-            data[j + 2] = 0
+          if (alpha === 255) continue
+
+          // Convert all non-opaque pixels to either:
+          // - fully transparent (via chroma key), or
+          // - fully opaque composited onto black
+          if (alpha === 0 || alpha < alphaCutoff) {
+            data[j] = keyR
+            data[j + 1] = keyG
+            data[j + 2] = keyB
             data[j + 3] = 255
+            continue
           }
+
+          const a = alpha / 255
+          data[j] = Math.round(data[j] * a)
+          data[j + 1] = Math.round(data[j + 1] * a)
+          data[j + 2] = Math.round(data[j + 2] * a)
+          data[j + 3] = 255
         }
         
         ctx.putImageData(imageData, 0, 0)
@@ -179,7 +198,7 @@ function App() {
       setIsRecording(false)
       setRecordingProgress(0)
     }
-  }, [isRecording, text, settings])
+  }, [isRecording, text, captureFrames])
 
   return (
     <div className="app">
