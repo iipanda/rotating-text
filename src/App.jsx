@@ -37,10 +37,10 @@ function App() {
     const frames = Math.round((durationMs / 1000) * fps)
     const frameDelay = Math.round(1000 / fps)
     
-    const baseHeight = 400
+    const baseSize = 400
     const aspectRatio = Math.max(1, boundsRef.current.aspectRatio || 1)
-    const width = Math.round(baseHeight * aspectRatio)
-    const height = Math.round(baseHeight * 1.15)
+    const width = Math.round(baseSize * aspectRatio * 1.05)
+    const height = Math.round(baseSize * 1.05)
     
     const frameDataArray = []
     const frameCanvases = []

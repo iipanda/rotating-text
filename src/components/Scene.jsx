@@ -27,6 +27,7 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, 
         recordingRotation={recordingRotation}
         onBoundsCalculated={onBoundsCalculated}
         bevelType={settings.bevelType}
+        settings={settings}
       />
       
       <Environment preset="night" environmentIntensity={0.3} />

@@ -8,7 +8,8 @@ export default function Logo3D({
   recording = false, 
   recordingRotation = 0,
   onBoundsCalculated,
-  bevelType = 'chamfer'
+  bevelType = 'chamfer',
+  settings
 }) {
   const groupRef = useRef()
   const centerRef = useRef()
@@ -48,8 +49,8 @@ export default function Logo3D({
           velocityRef.current.x *= 0.95
           velocityRef.current.y *= 0.95
           
-          // Add slow auto-rotation
-          const autoRotateSpeed = 0.3
+          // Add slow auto-rotation based on duration setting
+          const autoRotateSpeed = (2 * Math.PI) / (settings?.rotationDuration || 3.5)
           setRotation(prev => ({
             x: prev.x + velocityRef.current.x,
             y: prev.y + velocityRef.current.y + autoRotateSpeed * 0.016
