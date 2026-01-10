@@ -5,7 +5,7 @@ import Scene from './components/Scene'
 import './App.css'
 
 function App() {
-  const [text, setText] = useState('GHOST')
+  const [text, setText] = useState('siema')
   const [isFocused, setIsFocused] = useState(false)
   const [isRecording, setIsRecording] = useState(false)
   const [recordingProgress, setRecordingProgress] = useState(0)

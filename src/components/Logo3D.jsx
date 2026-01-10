@@ -113,7 +113,7 @@ export default function Logo3D({
             bevelEnabled
             bevelThickness={0.04}
             bevelSize={0.03}
-            bevelSegments={10}
+            bevelSegments={1}
             curveSegments={24}
           >
             {text || ' '}
