@@ -45,3 +45,34 @@
 .text-display:hover {
   color: rgba(255, 68, 0, 0.5);
 }
+
+.gif-button {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: transparent;
+  border: 1px solid rgba(255, 68, 0, 0.3);
+  color: rgba(255, 68, 0, 0.5);
+  font-size: 12px;
+  font-family: system-ui, -apple-system, sans-serif;
+  letter-spacing: 0.1em;
+  padding: 8px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.gif-button:hover:not(:disabled) {
+  border-color: rgba(255, 68, 0, 0.6);
+  color: rgba(255, 68, 0, 0.8);
+}
+
+.gif-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.gif-button.recording {
+  border-color: rgba(255, 68, 0, 0.5);
+  color: rgba(255, 68, 0, 0.7);
+}
