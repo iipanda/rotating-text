@@ -21,6 +21,7 @@ function App() {
     lightIntensity: 5,
     bloomIntensity: 0.15,
     bloomThreshold: 0.15,
+    alwaysReadable: false,
   })
 
   const updateSetting = (key, value) => {
@@ -300,6 +301,15 @@ function App() {
               <option value="chamfer">Chamfer</option>
               <option value="rounded">Rounded</option>
             </select>
+          </div>
+
+          <div className="setting-row">
+            <label>Always readable</label>
+            <input
+              type="checkbox"
+              checked={settings.alwaysReadable}
+              onChange={(e) => updateSetting('alwaysReadable', e.target.checked)}
+            />
           </div>
           
           <div className="setting-row">

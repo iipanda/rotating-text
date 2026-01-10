@@ -19,6 +19,18 @@ export default function Logo3D({
   const previousMouseRef = useRef({ x: 0, y: 0 })
   const velocityRef = useRef({ x: 0, y: 0 })
   const { gl } = useThree()
+  const alwaysReadable = Boolean(settings?.alwaysReadable)
+
+  const getReadableRotationY = (y) => {
+    const twoPi = Math.PI * 2
+    let normalized = y % twoPi
+    if (normalized < 0) normalized += twoPi
+
+    // If the text would be back-facing, flip 180deg.
+    // This swap happens near edge-on angles, so it feels like a continuous spin.
+    if (normalized > Math.PI / 2 && normalized < (3 * Math.PI) / 2) return y + Math.PI
+    return y
+  }
 
   useEffect(() => {
     domElementRef.current = gl?.domElement ?? null
@@ -47,7 +59,9 @@ export default function Logo3D({
       if (recording) {
         // Use controlled rotation during recording
         groupRef.current.rotation.x = 0.1
-        groupRef.current.rotation.y = recordingRotation
+        groupRef.current.rotation.y = alwaysReadable
+          ? getReadableRotationY(recordingRotation)
+          : recordingRotation
       } else {
         if (!isDragging) {
           // Auto-rotate when not dragging
@@ -62,7 +76,9 @@ export default function Logo3D({
           }))
         }
         groupRef.current.rotation.x = rotation.x
-        groupRef.current.rotation.y = rotation.y
+        groupRef.current.rotation.y = alwaysReadable
+          ? getReadableRotationY(rotation.y)
+          : rotation.y
       }
     }
   })
