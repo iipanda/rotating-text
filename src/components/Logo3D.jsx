@@ -1,14 +1,39 @@
 import { useRef, useState, Suspense, useEffect } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { Text3D, Center } from '@react-three/drei'
+import * as THREE from 'three'
 
-export default function Logo3D({ text = 'GHOST', recording = false, recordingRotation = 0 }) {
+export default function Logo3D({ 
+  text = 'GHOST', 
+  recording = false, 
+  recordingRotation = 0,
+  onBoundsCalculated 
+}) {
   const groupRef = useRef()
+  const centerRef = useRef()
   const [isDragging, setIsDragging] = useState(false)
   const [rotation, setRotation] = useState({ x: 0.1, y: 0 })
   const previousMouseRef = useRef({ x: 0, y: 0 })
   const velocityRef = useRef({ x: 0, y: 0 })
   const { gl } = useThree()
+
+  // Calculate bounds when text changes
+  useEffect(() => {
+    if (centerRef.current && onBoundsCalculated) {
+      // Wait for geometry to be ready
+      setTimeout(() => {
+        if (centerRef.current) {
+          const box = new THREE.Box3().setFromObject(centerRef.current)
+          const size = new THREE.Vector3()
+          box.getSize(size)
+          
+          // Calculate aspect ratio based on text bounds
+          const aspectRatio = size.x / size.y
+          onBoundsCalculated({ width: size.x, height: size.y, aspectRatio })
+        }
+      }, 100)
+    }
+  }, [text, onBoundsCalculated])
 
   useFrame(() => {
     if (groupRef.current) {
@@ -80,7 +105,7 @@ export default function Logo3D({ text = 'GHOST', recording = false, recordingRot
       onPointerOut={() => { if (!recording) gl.domElement.style.cursor = 'auto' }}
     >
       <Suspense fallback={null}>
-        <Center key={text}>
+        <Center ref={centerRef} key={text}>
           <Text3D
             font="/fonts/inter_bold.json"
             size={1}

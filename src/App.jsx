@@ -1,5 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import UPNG from 'upng-js'
+import GIF from 'gif.js'
 import Scene from './components/Scene'
 import './App.css'
 
@@ -9,81 +10,159 @@ function App() {
   const [isRecording, setIsRecording] = useState(false)
   const [recordingProgress, setRecordingProgress] = useState(0)
   const [recordingRotation, setRecordingRotation] = useState(0)
+  const [showExportMenu, setShowExportMenu] = useState(false)
+  const boundsRef = useRef({ aspectRatio: 1 })
 
-  const renderApng = useCallback(async () => {
-    if (isRecording) return
-    
-    setIsRecording(true)
-    setRecordingProgress(0)
+  const handleBoundsCalculated = useCallback((bounds) => {
+    boundsRef.current = bounds
+  }, [])
 
+  const captureFrames = async () => {
     const frames = 60
-    const size = 512
-    const frameDelay = 50 // ms per frame
+    const frameDelay = 50
+    
+    const baseHeight = 400
+    const aspectRatio = Math.max(1, boundsRef.current.aspectRatio || 1)
+    const width = Math.round(baseHeight * aspectRatio * 1.3)
+    const height = Math.round(baseHeight * 1.3)
     
     const frameDataArray = []
+    const frameCanvases = []
     const delays = []
 
-    // Wait for recording mode to apply
     await new Promise(r => setTimeout(r, 300))
 
     const canvas = document.querySelector('canvas')
     if (!canvas) {
-      console.error('Canvas not found')
-      setIsRecording(false)
-      return
+      throw new Error('Canvas not found')
     }
 
-    // Capture frames
     for (let i = 0; i < frames; i++) {
       const rotation = (i / frames) * Math.PI * 2
       setRecordingRotation(rotation)
       
-      // Wait for render
       await new Promise(r => setTimeout(r, 80))
       
-      // Capture frame
       const tempCanvas = document.createElement('canvas')
-      tempCanvas.width = size
-      tempCanvas.height = size
+      tempCanvas.width = width
+      tempCanvas.height = height
       const ctx = tempCanvas.getContext('2d')
       
-      // Clear with transparent
-      ctx.clearRect(0, 0, size, size)
+      ctx.clearRect(0, 0, width, height)
       
-      // Draw the WebGL canvas to temp canvas, centered and scaled
-      const srcSize = Math.min(canvas.width, canvas.height)
-      const srcX = (canvas.width - srcSize) / 2
-      const srcY = (canvas.height - srcSize) / 2
-      ctx.drawImage(canvas, srcX, srcY, srcSize, srcSize, 0, 0, size, size)
+      const canvasAspect = canvas.width / canvas.height
+      const outputAspect = width / height
       
-      // Get raw RGBA data
-      const imageData = ctx.getImageData(0, 0, size, size)
+      let srcX, srcY, srcW, srcH
+      
+      if (canvasAspect > outputAspect) {
+        srcH = canvas.height
+        srcW = srcH * outputAspect
+        srcX = (canvas.width - srcW) / 2
+        srcY = 0
+      } else {
+        srcW = canvas.width
+        srcH = srcW / outputAspect
+        srcX = 0
+        srcY = (canvas.height - srcH) / 2
+      }
+      
+      ctx.drawImage(canvas, srcX, srcY, srcW, srcH, 0, 0, width, height)
+      
+      const imageData = ctx.getImageData(0, 0, width, height)
       frameDataArray.push(imageData.data.buffer)
+      frameCanvases.push(tempCanvas)
       delays.push(frameDelay)
       
       setRecordingProgress(Math.round(((i + 1) / frames) * 100))
     }
 
-    // Encode as APNG
-    const apngData = UPNG.encode(
-      frameDataArray,
-      size,
-      size,
-      0, // 0 = lossless
-      delays
-    )
+    return { frameDataArray, frameCanvases, delays, width, height }
+  }
+
+  const exportApng = useCallback(async () => {
+    if (isRecording) return
     
-    // Download
-    const blob = new Blob([apngData], { type: 'image/png' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `${text || 'logo'}.png`
-    a.click()
-    URL.revokeObjectURL(url)
+    setIsRecording(true)
+    setShowExportMenu(false)
+    setRecordingProgress(0)
+
+    try {
+      const { frameDataArray, delays, width, height } = await captureFrames()
+      
+      const apngData = UPNG.encode(frameDataArray, width, height, 0, delays)
+      
+      const blob = new Blob([apngData], { type: 'image/png' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `${text || 'logo'}.png`
+      a.click()
+      URL.revokeObjectURL(url)
+    } catch (err) {
+      console.error(err)
+    }
     
     setIsRecording(false)
     setRecordingProgress(0)
+  }, [isRecording, text])
+
+  const exportGif = useCallback(async () => {
+    if (isRecording) return
+    
+    setIsRecording(true)
+    setShowExportMenu(false)
+    setRecordingProgress(0)
+
+    try {
+      const { frameCanvases, delays, width, height } = await captureFrames()
+      
+      const gif = new GIF({
+        workers: 2,
+        quality: 1,
+        width,
+        height,
+        workerScript: '/gif.worker.js',
+        transparent: 0x00ff00
+      })
+
+      // Process frames to add green background for transparency
+      frameCanvases.forEach((frameCanvas, i) => {
+        const ctx = frameCanvas.getContext('2d')
+        const imageData = ctx.getImageData(0, 0, width, height)
+        const data = imageData.data
+        
+        // Replace transparent pixels with green
+        for (let j = 0; j < data.length; j += 4) {
+          if (data[j + 3] < 128) {
+            data[j] = 0      // R
+            data[j + 1] = 255 // G
+            data[j + 2] = 0   // B
+            data[j + 3] = 255 // A
+          }
+        }
+        
+        ctx.putImageData(imageData, 0, 0)
+        gif.addFrame(frameCanvas, { delay: delays[i], copy: true })
+      })
+
+      gif.on('finished', (blob) => {
+        const url = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `${text || 'logo'}.gif`
+        a.click()
+        URL.revokeObjectURL(url)
+        setIsRecording(false)
+        setRecordingProgress(0)
+      })
+
+      gif.render()
+    } catch (err) {
+      console.error(err)
+      setIsRecording(false)
+      setRecordingProgress(0)
+    }
   }, [isRecording, text])
 
   return (
@@ -92,17 +171,27 @@ function App() {
         text={text} 
         recording={isRecording}
         recordingRotation={recordingRotation}
+        onBoundsCalculated={handleBoundsCalculated}
       />
       
       {isRecording && <div className="recording-overlay" />}
       
-      <button 
-        className={`gif-button ${isRecording ? 'recording' : ''}`}
-        onClick={renderApng}
-        disabled={isRecording}
-      >
-        {isRecording ? `Rendering... ${recordingProgress}%` : 'Export APNG'}
-      </button>
+      <div className="export-container">
+        <button 
+          className={`export-button ${isRecording ? 'recording' : ''}`}
+          onClick={() => !isRecording && setShowExportMenu(!showExportMenu)}
+          disabled={isRecording}
+        >
+          {isRecording ? `Rendering... ${recordingProgress}%` : 'Export ▾'}
+        </button>
+        
+        {showExportMenu && !isRecording && (
+          <div className="export-menu">
+            <button onClick={exportApng}>APNG (best quality)</button>
+            <button onClick={exportGif}>GIF (smaller size)</button>
+          </div>
+        )}
+      </div>
       
       <div className={`input-container ${isFocused ? 'focused' : ''}`}>
         {isFocused ? (
