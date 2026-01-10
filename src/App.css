@@ -76,3 +76,11 @@
   border-color: rgba(255, 68, 0, 0.5);
   color: rgba(255, 68, 0, 0.7);
 }
+
+.recording-overlay {
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  pointer-events: none;
+  mix-blend-mode: multiply;
+}
