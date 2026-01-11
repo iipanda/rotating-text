@@ -20,6 +20,9 @@ export default function Logo3D({
   const velocityRef = useRef({ x: 0, y: 0 })
   const { gl } = useThree()
   const alwaysReadable = Boolean(settings?.alwaysReadable)
+  const bounceBack = Boolean(settings?.bounceBack)
+  const bounceTimeRef = useRef(0)
+  const bounceDirectionRef = useRef(1)
 
   const getReadableRotationY = (y) => {
     const twoPi = Math.PI * 2
@@ -69,11 +72,26 @@ export default function Logo3D({
           velocityRef.current.y *= 0.95
           
           // Add slow auto-rotation based on duration setting
-          const autoRotateSpeed = (2 * Math.PI) / (settings?.rotationDuration || 3.5)
-          setRotation(prev => ({
-            x: prev.x + velocityRef.current.x,
-            y: prev.y + velocityRef.current.y + autoRotateSpeed * 0.016
-          }))
+          const duration = settings?.rotationDuration || 3.5
+          const dt = 0.016
+          
+          if (bounceBack) {
+            // Bounce back mode: smooth easing
+            bounceTimeRef.current = (bounceTimeRef.current + dt / duration) % 1
+            // 0 -> PI/2 -> 0 -> -PI/2 -> 0
+            const t = bounceTimeRef.current
+            const bounceY = (Math.PI / 2) * Math.sin(t * Math.PI * 2)
+            setRotation(prev => ({
+              x: prev.x + velocityRef.current.x,
+              y: bounceY
+            }))
+          } else {
+            const autoRotateSpeed = (2 * Math.PI) / duration
+            setRotation(prev => ({
+              x: prev.x + velocityRef.current.x,
+              y: prev.y + velocityRef.current.y + autoRotateSpeed * dt
+            }))
+          }
         }
         groupRef.current.rotation.x = rotation.x
         groupRef.current.rotation.y = alwaysReadable

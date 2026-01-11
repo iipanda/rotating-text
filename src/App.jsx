@@ -22,6 +22,7 @@ function App() {
     bloomIntensity: 0.15,
     bloomThreshold: 0.15,
     alwaysReadable: false,
+    bounceBack: false,
   })
 
   const updateSetting = (key, value) => {
@@ -55,7 +56,14 @@ function App() {
     }
 
     for (let i = 0; i < frames; i++) {
-      const rotation = (i / frames) * Math.PI * 2
+      let rotation
+      if (settings.bounceBack) {
+        // Bounce: 0 -> PI/2 -> 0 -> -PI/2 -> 0 with smooth easing
+        const t = i / frames
+        rotation = (Math.PI / 2) * Math.sin(t * Math.PI * 2)
+      } else {
+        rotation = (i / frames) * Math.PI * 2
+      }
       setRecordingRotation(rotation)
       
       await new Promise(r => setTimeout(r, 80))
@@ -95,7 +103,7 @@ function App() {
     }
 
     return { frameDataArray, frameCanvases, delays, width, height }
-  }, [settings.rotationDuration])
+  }, [settings.rotationDuration, settings.bounceBack])
 
   const exportApng = useCallback(async () => {
     if (isRecording) return
@@ -304,11 +312,26 @@ function App() {
           </div>
 
           <div className="setting-row">
-            <label>Always readable</label>
+            <label>Fake rotate</label>
             <input
               type="checkbox"
               checked={settings.alwaysReadable}
-              onChange={(e) => updateSetting('alwaysReadable', e.target.checked)}
+              onChange={(e) => {
+                updateSetting('alwaysReadable', e.target.checked)
+                if (e.target.checked) updateSetting('bounceBack', false)
+              }}
+            />
+          </div>
+
+          <div className="setting-row">
+            <label>Bounce back</label>
+            <input
+              type="checkbox"
+              checked={settings.bounceBack}
+              onChange={(e) => {
+                updateSetting('bounceBack', e.target.checked)
+                if (e.target.checked) updateSetting('alwaysReadable', false)
+              }}
             />
           </div>
           

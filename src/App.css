@@ -158,8 +158,9 @@
   color: rgba(255, 68, 0, 0.4);
   font-size: 11px;
   font-family: system-ui, -apple-system, sans-serif;
-  width: 60px;
+  width: 70px;
   flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .setting-row input[type="range"] {
