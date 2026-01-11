@@ -5,6 +5,9 @@ import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 import Logo3D from './Logo3D'
 
 function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, settings, materialPresets }) {
+  const hasTexture = materialPresets?.[settings.material]?.texture
+  const lightColor = hasTexture ? '#ffffff' : settings.color
+  
   return (
     <>
       {!recording && <color attach="background" args={['#000000']} />}
@@ -12,13 +15,13 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, 
       <directionalLight
         position={[5, 3, 2]}
         intensity={settings.lightIntensity}
-        color={settings.color}
+        color={lightColor}
       />
       
       <pointLight
         position={[-3, 0, -4]}
         intensity={settings.lightIntensity * 0.375}
-        color={settings.color}
+        color={lightColor}
       />
       
       <Logo3D 
