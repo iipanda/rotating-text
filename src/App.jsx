@@ -36,14 +36,14 @@ function App() {
     plastic: { metalness: 0.2, roughness: 0.4, envMapIntensity: 0.8 },
     glass: { metalness: 0.1, roughness: 0.05, envMapIntensity: 3, transparent: true, opacity: 0.4 },
     brushed: { metalness: 0.8, roughness: 0.4, envMapIntensity: 1 },
-    metal: { metalness: 0.9, roughness: 0.3, envMapIntensity: 1.2, texture: 'metal' },
-    wood: { metalness: 0.1, roughness: 0.7, envMapIntensity: 0.5, texture: 'wood' },
-    grass: { metalness: 0.1, roughness: 0.9, envMapIntensity: 0.4, texture: 'grass' },
-    marble: { metalness: 0.4, roughness: 0.2, envMapIntensity: 1.5, texture: 'marble' },
-    lava: { metalness: 0.5, roughness: 0.5, envMapIntensity: 1.0, texture: 'lava' },
-    leather: { metalness: 0.2, roughness: 0.6, envMapIntensity: 0.6, texture: 'leather' },
-    rust: { metalness: 0.7, roughness: 0.5, envMapIntensity: 0.8, texture: 'rust' },
-    concrete: { metalness: 0.1, roughness: 0.9, envMapIntensity: 0.3, texture: 'concrete' },
+    metal: { metalness: 0.3, roughness: 0.5, envMapIntensity: 0.3, texture: 'metal' },
+    wood: { metalness: 0.0, roughness: 0.8, envMapIntensity: 0.1, texture: 'wood' },
+    grass: { metalness: 0.0, roughness: 0.9, envMapIntensity: 0.1, texture: 'grass' },
+    marble: { metalness: 0.1, roughness: 0.4, envMapIntensity: 0.2, texture: 'marble' },
+    lava: { metalness: 0.0, roughness: 0.7, envMapIntensity: 0.1, texture: 'lava' },
+    leather: { metalness: 0.0, roughness: 0.8, envMapIntensity: 0.1, texture: 'leather' },
+    rust: { metalness: 0.2, roughness: 0.7, envMapIntensity: 0.2, texture: 'rust' },
+    concrete: { metalness: 0.0, roughness: 0.9, envMapIntensity: 0.1, texture: 'concrete' },
   }
 
   // Font options

@@ -7,6 +7,7 @@ import Logo3D from './Logo3D'
 function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, settings, materialPresets }) {
   const hasTexture = materialPresets?.[settings.material]?.texture
   const lightColor = hasTexture ? '#ffffff' : settings.color
+  const lightIntensity = hasTexture ? Math.min(settings.lightIntensity, 2) : settings.lightIntensity
   
   return (
     <>
@@ -14,13 +15,13 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, 
       
       <directionalLight
         position={[5, 3, 2]}
-        intensity={settings.lightIntensity}
+        intensity={lightIntensity}
         color={lightColor}
       />
       
       <pointLight
         position={[-3, 0, -4]}
-        intensity={settings.lightIntensity * 0.375}
+        intensity={lightIntensity * 0.375}
         color={lightColor}
       />
       
