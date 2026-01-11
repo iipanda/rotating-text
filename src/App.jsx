@@ -388,12 +388,10 @@ function App() {
             placeholder="Enter text..."
           />
         ) : (
-          <span 
-            className="text-display"
-            onClick={() => setIsFocused(true)}
-          >
-            {text || 'Click to edit'}
-          </span>
+          <div className="text-display-wrapper" onClick={() => setIsFocused(true)}>
+            <span className="text-hint">click to edit text</span>
+            <span className="text-display">{text || 'LOGO'}</span>
+          </div>
         )}
       </div>
     </div>
