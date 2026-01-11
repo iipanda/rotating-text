@@ -262,7 +262,10 @@ function App() {
       <div className="top-controls">
         <button 
           className={`control-button ${showSettings ? 'active' : ''}`}
-          onClick={() => setShowSettings(!showSettings)}
+          onClick={() => {
+            setShowSettings(!showSettings)
+            if (!showSettings) setShowExportMenu(false)
+          }}
         >
           ⚙
         </button>
@@ -270,7 +273,11 @@ function App() {
         <div className="export-container">
           <button 
             className={`export-button ${isRecording ? 'recording' : ''}`}
-            onClick={() => !isRecording && setShowExportMenu(!showExportMenu)}
+            onClick={() => {
+              if (isRecording) return
+              setShowExportMenu(!showExportMenu)
+              if (!showExportMenu) setShowSettings(false)
+            }}
             disabled={isRecording}
           >
             {isRecording ? `${recordingProgress}%` : 'Export ▾'}
