@@ -225,3 +225,52 @@
   width: 35px;
   text-align: right;
 }
+
+.setting-row input[type="color"] {
+  -webkit-appearance: none;
+  border: 1px solid rgba(255, 68, 0, 0.3);
+  background: transparent;
+  width: 50px;
+  height: 24px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 2px;
+}
+
+.setting-row input[type="color"]::-webkit-color-swatch {
+  border: none;
+}
+
+.settings-divider {
+  height: 1px;
+  background: rgba(255, 68, 0, 0.15);
+  margin: 12px 0;
+}
+
+.settings-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.settings-btn {
+  flex: 1;
+  background: transparent;
+  border: 1px solid rgba(255, 68, 0, 0.3);
+  color: rgba(255, 68, 0, 0.5);
+  font-size: 10px;
+  font-family: system-ui, -apple-system, sans-serif;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.settings-btn:hover {
+  border-color: rgba(255, 68, 0, 0.6);
+  color: rgba(255, 68, 0, 0.8);
+  background: rgba(255, 68, 0, 0.1);
+}

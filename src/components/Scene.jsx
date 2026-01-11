@@ -4,7 +4,7 @@ import { Environment } from '@react-three/drei'
 import { EffectComposer, Bloom, Vignette } from '@react-three/postprocessing'
 import Logo3D from './Logo3D'
 
-function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, settings }) {
+function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, settings, materialPresets }) {
   return (
     <>
       {!recording && <color attach="background" args={['#000000']} />}
@@ -12,13 +12,13 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, 
       <directionalLight
         position={[5, 3, 2]}
         intensity={settings.lightIntensity}
-        color="#ff5500"
+        color={settings.color}
       />
       
       <pointLight
         position={[-3, 0, -4]}
         intensity={settings.lightIntensity * 0.375}
-        color="#ff3300"
+        color={settings.color}
       />
       
       <Logo3D 
@@ -28,6 +28,7 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, 
         onBoundsCalculated={onBoundsCalculated}
         bevelType={settings.bevelType}
         settings={settings}
+        materialPresets={materialPresets}
       />
       
       <Environment preset="night" environmentIntensity={0.3} />
@@ -45,7 +46,7 @@ function SceneContent({ text, recording, recordingRotation, onBoundsCalculated, 
   )
 }
 
-const Scene = forwardRef(function Scene({ text, recording, recordingRotation, onBoundsCalculated, settings }, ref) {
+const Scene = forwardRef(function Scene({ text, recording, recordingRotation, onBoundsCalculated, settings, materialPresets }, ref) {
   return (
     <Canvas
       ref={ref}
@@ -69,6 +70,7 @@ const Scene = forwardRef(function Scene({ text, recording, recordingRotation, on
         recordingRotation={recordingRotation}
         onBoundsCalculated={onBoundsCalculated}
         settings={settings}
+        materialPresets={materialPresets}
       />
     </Canvas>
   )

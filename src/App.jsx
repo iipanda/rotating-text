@@ -14,19 +14,62 @@ function App() {
   const [showSettings, setShowSettings] = useState(false)
   const boundsRef = useRef({ aspectRatio: 1 })
 
-  // Settings
-  const [settings, setSettings] = useState({
+  // Default settings
+  const defaultSettings = {
     rotationDuration: 7,
-    bevelType: 'rounded', // 'chamfer' or 'rounded'
+    bevelType: 'rounded',
     lightIntensity: 5,
     bloomIntensity: 0.15,
     bloomThreshold: 0.15,
     alwaysReadable: false,
     bounceBack: false,
-  })
+    color: '#ff4400',
+    font: 'inter',
+    material: 'metallic',
+  }
+
+  // Material presets
+  const materialPresets = {
+    metallic: { metalness: 1, roughness: 0.15, envMapIntensity: 1.5 },
+    chrome: { metalness: 1, roughness: 0.05, envMapIntensity: 2 },
+    matte: { metalness: 0.1, roughness: 0.8, envMapIntensity: 0.5 },
+    plastic: { metalness: 0.2, roughness: 0.4, envMapIntensity: 0.8 },
+    glass: { metalness: 0.9, roughness: 0.1, envMapIntensity: 2.5 },
+    brushed: { metalness: 0.8, roughness: 0.4, envMapIntensity: 1 },
+  }
+
+  // Font options
+  const fontOptions = ['inter', 'bebas', 'roboto', 'montserrat', 'oswald']
+
+  // Settings
+  const [settings, setSettings] = useState(defaultSettings)
 
   const updateSetting = (key, value) => {
     setSettings(prev => ({ ...prev, [key]: value }))
+  }
+
+  const resetSettings = () => {
+    setSettings(defaultSettings)
+  }
+
+  const randomizeSettings = () => {
+    const randomColor = '#' + Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')
+    const randomFont = fontOptions[Math.floor(Math.random() * fontOptions.length)]
+    const materialKeys = Object.keys(materialPresets)
+    const randomMaterial = materialKeys[Math.floor(Math.random() * materialKeys.length)]
+    
+    setSettings({
+      rotationDuration: 2 + Math.random() * 6,
+      bevelType: Math.random() > 0.5 ? 'rounded' : 'chamfer',
+      lightIntensity: 2 + Math.random() * 6,
+      bloomIntensity: Math.random() * 0.5,
+      bloomThreshold: Math.random() * 0.5,
+      alwaysReadable: false,
+      bounceBack: Math.random() > 0.5,
+      color: randomColor,
+      font: randomFont,
+      material: randomMaterial,
+    })
   }
 
   const handleBoundsCalculated = useCallback((bounds) => {
@@ -257,6 +300,7 @@ function App() {
         recordingRotation={recordingRotation}
         onBoundsCalculated={handleBoundsCalculated}
         settings={settings}
+        materialPresets={materialPresets}
       />
       
       <div className="top-controls">
@@ -379,6 +423,48 @@ function App() {
               onChange={(e) => updateSetting('bloomThreshold', parseFloat(e.target.value))}
             />
             <span>{settings.bloomThreshold.toFixed(2)}</span>
+          </div>
+
+          <div className="settings-divider" />
+
+          <div className="setting-row">
+            <label>Color</label>
+            <input
+              type="color"
+              value={settings.color}
+              onChange={(e) => updateSetting('color', e.target.value)}
+            />
+          </div>
+
+          <div className="setting-row">
+            <label>Font</label>
+            <select
+              value={settings.font}
+              onChange={(e) => updateSetting('font', e.target.value)}
+            >
+              {fontOptions.map(font => (
+                <option key={font} value={font}>{font.charAt(0).toUpperCase() + font.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="setting-row">
+            <label>Material</label>
+            <select
+              value={settings.material}
+              onChange={(e) => updateSetting('material', e.target.value)}
+            >
+              {Object.keys(materialPresets).map(mat => (
+                <option key={mat} value={mat}>{mat.charAt(0).toUpperCase() + mat.slice(1)}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="settings-divider" />
+
+          <div className="settings-buttons">
+            <button className="settings-btn" onClick={randomizeSettings}>Randomize</button>
+            <button className="settings-btn" onClick={resetSettings}>Reset</button>
           </div>
         </div>
       )}

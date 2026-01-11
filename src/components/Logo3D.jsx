@@ -9,7 +9,8 @@ export default function Logo3D({
   recordingRotation = 0,
   onBoundsCalculated,
   bevelType = 'chamfer',
-  settings
+  settings,
+  materialPresets
 }) {
   const groupRef = useRef()
   const centerRef = useRef()
@@ -150,9 +151,9 @@ export default function Logo3D({
       }}
     >
       <Suspense fallback={null}>
-        <Center ref={centerRef} key={text}>
+        <Center ref={centerRef} key={`${text}-${settings?.font}`}>
           <Text3D
-            font="/fonts/inter_bold.json"
+            font={`/fonts/${settings?.font || 'inter'}_bold.json`}
             size={1}
             height={0.3}
             bevelEnabled
@@ -163,10 +164,10 @@ export default function Logo3D({
           >
             {text || ' '}
             <meshStandardMaterial
-              color="#ff4400"
-              metalness={1}
-              roughness={0.15}
-              envMapIntensity={1.5}
+              color={settings?.color || '#ff4400'}
+              metalness={materialPresets?.[settings?.material]?.metalness ?? 1}
+              roughness={materialPresets?.[settings?.material]?.roughness ?? 0.15}
+              envMapIntensity={materialPresets?.[settings?.material]?.envMapIntensity ?? 1.5}
             />
           </Text3D>
         </Center>
