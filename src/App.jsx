@@ -419,14 +419,16 @@ function App() {
 
           <div className="settings-divider" />
 
-          <div className="setting-row">
-            <label>Color</label>
-            <input
-              type="color"
-              value={settings.color}
-              onChange={(e) => updateSetting('color', e.target.value)}
-            />
-          </div>
+          {!materialPresets[settings.material]?.texture && (
+            <div className="setting-row">
+              <label>Color</label>
+              <input
+                type="color"
+                value={settings.color}
+                onChange={(e) => updateSetting('color', e.target.value)}
+              />
+            </div>
+          )}
 
           <div className="setting-row">
             <label>Font</label>
