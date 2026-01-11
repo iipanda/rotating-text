@@ -34,8 +34,14 @@ function App() {
     chrome: { metalness: 1, roughness: 0.05, envMapIntensity: 2 },
     matte: { metalness: 0.1, roughness: 0.8, envMapIntensity: 0.5 },
     plastic: { metalness: 0.2, roughness: 0.4, envMapIntensity: 0.8 },
-    glass: { metalness: 0.9, roughness: 0.1, envMapIntensity: 2.5 },
+    glass: { metalness: 0.1, roughness: 0.05, envMapIntensity: 3, transparent: true, opacity: 0.4 },
     brushed: { metalness: 0.8, roughness: 0.4, envMapIntensity: 1 },
+    sheetMetal: { metalness: 0.95, roughness: 0.35, envMapIntensity: 1.2, texture: 'sheetMetal' },
+    flame: { metalness: 0.3, roughness: 0.5, envMapIntensity: 0.8, texture: 'flame' },
+    tiger: { metalness: 0.2, roughness: 0.6, envMapIntensity: 0.6, texture: 'tiger' },
+    grass: { metalness: 0.1, roughness: 0.9, envMapIntensity: 0.4, texture: 'grass' },
+    marble: { metalness: 0.3, roughness: 0.2, envMapIntensity: 1.5, texture: 'marble' },
+    lava: { metalness: 0.5, roughness: 0.4, envMapIntensity: 1.2, texture: 'lava' },
   }
 
   // Font options
@@ -58,18 +64,13 @@ function App() {
     const materialKeys = Object.keys(materialPresets)
     const randomMaterial = materialKeys[Math.floor(Math.random() * materialKeys.length)]
     
-    setSettings({
-      rotationDuration: 2 + Math.random() * 6,
-      bevelType: Math.random() > 0.5 ? 'rounded' : 'chamfer',
-      lightIntensity: 2 + Math.random() * 6,
-      bloomIntensity: Math.random() * 0.5,
-      bloomThreshold: Math.random() * 0.5,
-      alwaysReadable: false,
-      bounceBack: Math.random() > 0.5,
+    setSettings(prev => ({
+      ...prev,
       color: randomColor,
       font: randomFont,
       material: randomMaterial,
-    })
+      bevelType: Math.random() > 0.5 ? 'rounded' : 'chamfer',
+    }))
   }
 
   const handleBoundsCalculated = useCallback((bounds) => {
@@ -350,17 +351,6 @@ function App() {
             />
             <span>{settings.rotationDuration}s</span>
           </div>
-          
-          <div className="setting-row">
-            <label>Bevel</label>
-            <select
-              value={settings.bevelType}
-              onChange={(e) => updateSetting('bevelType', e.target.value)}
-            >
-              <option value="chamfer">Chamfer</option>
-              <option value="rounded">Rounded</option>
-            </select>
-          </div>
 
           <div className="setting-row">
             <label>Fake rotate</label>
@@ -457,6 +447,17 @@ function App() {
               {Object.keys(materialPresets).map(mat => (
                 <option key={mat} value={mat}>{mat.charAt(0).toUpperCase() + mat.slice(1)}</option>
               ))}
+            </select>
+          </div>
+
+          <div className="setting-row">
+            <label>Bevel</label>
+            <select
+              value={settings.bevelType}
+              onChange={(e) => updateSetting('bevelType', e.target.value)}
+            >
+              <option value="chamfer">Chamfer</option>
+              <option value="rounded">Rounded</option>
             </select>
           </div>
 

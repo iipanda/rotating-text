@@ -1,7 +1,16 @@
-import { useRef, useState, Suspense, useEffect } from 'react'
+import { useRef, useState, Suspense, useEffect, useMemo } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
-import { Text3D, Center } from '@react-three/drei'
+import { Text3D, Center, useTexture } from '@react-three/drei'
 import * as THREE from 'three'
+
+const textureUrls = {
+  sheetMetal: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=512&q=80',
+  flame: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=512&q=80',
+  tiger: 'https://images.unsplash.com/photo-1615963244664-5b845b2025ee?w=512&q=80',
+  grass: 'https://images.unsplash.com/photo-1531744881850-f8a1c5e0d8a5?w=512&q=80',
+  marble: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=512&q=80',
+  lava: 'https://images.unsplash.com/photo-1565514020179-026b92b2d49d?w=512&q=80',
+}
 
 export default function Logo3D({ 
   text = 'GHOST', 
@@ -168,6 +177,8 @@ export default function Logo3D({
               metalness={materialPresets?.[settings?.material]?.metalness ?? 1}
               roughness={materialPresets?.[settings?.material]?.roughness ?? 0.15}
               envMapIntensity={materialPresets?.[settings?.material]?.envMapIntensity ?? 1.5}
+              transparent={materialPresets?.[settings?.material]?.transparent ?? false}
+              opacity={materialPresets?.[settings?.material]?.opacity ?? 1}
             />
           </Text3D>
         </Center>
