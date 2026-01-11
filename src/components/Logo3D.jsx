@@ -1,15 +1,17 @@
 import { useRef, useState, Suspense, useEffect, useMemo } from 'react'
-import { useFrame, useThree } from '@react-three/fiber'
-import { Text3D, Center, useTexture } from '@react-three/drei'
+import { useFrame, useThree, useLoader } from '@react-three/fiber'
+import { Text3D, Center } from '@react-three/drei'
 import * as THREE from 'three'
 
-const textureUrls = {
-  sheetMetal: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=512&q=80',
-  flame: 'https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?w=512&q=80',
-  tiger: 'https://images.unsplash.com/photo-1615963244664-5b845b2025ee?w=512&q=80',
-  grass: 'https://images.unsplash.com/photo-1531744881850-f8a1c5e0d8a5?w=512&q=80',
-  marble: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=512&q=80',
-  lava: 'https://images.unsplash.com/photo-1565514020179-026b92b2d49d?w=512&q=80',
+const textureFiles = {
+  metal: '/textures/metal.jpg',
+  wood: '/textures/wood.jpg',
+  grass: '/textures/grass.jpg',
+  marble: '/textures/marble.jpg',
+  lava: '/textures/lava.jpg',
+  leather: '/textures/leather.jpg',
+  rust: '/textures/rust.jpg',
+  concrete: '/textures/concrete.jpg',
 }
 
 export default function Logo3D({ 
@@ -33,6 +35,23 @@ export default function Logo3D({
   const bounceBack = Boolean(settings?.bounceBack)
   const bounceTimeRef = useRef(0)
   const bounceDirectionRef = useRef(1)
+  const [loadedTexture, setLoadedTexture] = useState(null)
+
+  const textureName = materialPresets?.[settings?.material]?.texture
+
+  useEffect(() => {
+    if (textureName && textureFiles[textureName]) {
+      const loader = new THREE.TextureLoader()
+      loader.load(textureFiles[textureName], (tex) => {
+        tex.wrapS = THREE.RepeatWrapping
+        tex.wrapT = THREE.RepeatWrapping
+        tex.repeat.set(2, 1)
+        setLoadedTexture(tex)
+      })
+    } else {
+      setLoadedTexture(null)
+    }
+  }, [textureName])
 
   const getReadableRotationY = (y) => {
     const twoPi = Math.PI * 2
@@ -173,7 +192,8 @@ export default function Logo3D({
           >
             {text || ' '}
             <meshStandardMaterial
-              color={settings?.color || '#ff4400'}
+              color={loadedTexture ? '#ffffff' : (settings?.color || '#ff4400')}
+              map={loadedTexture}
               metalness={materialPresets?.[settings?.material]?.metalness ?? 1}
               roughness={materialPresets?.[settings?.material]?.roughness ?? 0.15}
               envMapIntensity={materialPresets?.[settings?.material]?.envMapIntensity ?? 1.5}
